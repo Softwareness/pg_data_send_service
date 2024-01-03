@@ -44,7 +44,7 @@ func HandleRequest(ctx context.Context, s3Event events.S3Event) (string, error) 
 		bucket := s3Entity.Bucket.Name
 		key := s3Entity.Object.Key
 
-		// Lees het JSON-bestand van S3
+		// Read JSON file from S3
 		result, err := s3svc.GetObject(&s3.GetObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
@@ -58,7 +58,7 @@ func HandleRequest(ctx context.Context, s3Event events.S3Event) (string, error) 
 			return "", err
 		}
 
-		// Parse de JSON-data
+		// Parse the JSON-data
 		var payloadData struct {
 			InstanceID     string `json:"instance_id"`
 			AppID          string `json:"app_id"`
@@ -75,7 +75,7 @@ func HandleRequest(ctx context.Context, s3Event events.S3Event) (string, error) 
 			return "", err
 		}
 
-		// Stel het dispatch event samen
+		// Create dispatch event
 		dispatchEvent := GitHubDispatchEvent{
 			EventType: "trigger-workflow",
 			ClientPayload: struct {
@@ -108,7 +108,7 @@ func HandleRequest(ctx context.Context, s3Event events.S3Event) (string, error) 
 			return "", err
 		}
 
-		// Verstuur het event naar GitHub
+		// Send event to GitHub
 		githubToken := os.Getenv("GITHUB_TOKEN")
 		repoOwner := os.Getenv("REPO_OWNER")
 		repoName := os.Getenv("REPO_NAME")
@@ -139,7 +139,7 @@ func HandleRequest(ctx context.Context, s3Event events.S3Event) (string, error) 
 			return "", fmt.Errorf("GitHub API responded with status code: %d, body: %s", resp.StatusCode, string(responseBody))
 		}
 
-		// Verplaats het bestand naar de 'archive'-map
+		// Move order file to the archive folder
 		archiveKey := strings.Replace(key, "process/", "archive/", 1)
 		_, err = s3svc.CopyObject(&s3.CopyObjectInput{
 			Bucket:     aws.String(bucket),
@@ -150,7 +150,7 @@ func HandleRequest(ctx context.Context, s3Event events.S3Event) (string, error) 
 			return "", err
 		}
 
-		// Verwijder het originele bestand
+		// Delete order file from process folder
 		_, err = s3svc.DeleteObject(&s3.DeleteObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
@@ -160,7 +160,7 @@ func HandleRequest(ctx context.Context, s3Event events.S3Event) (string, error) 
 		}
 	}
 
-	return "Verwerking voltooid", nil
+	return "Order has been send!", nil
 }
 
 func main() {

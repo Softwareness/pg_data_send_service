@@ -82,9 +82,9 @@ resource "aws_lambda_function" "payload" {
   source_code_hash = filebase64sha256("main.zip")
   environment {
     variables = {
-      GITHUB_TOKEN = "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"
-      REPO_OWNER   = "Softwareness"
-      REPO_NAME    = "bmwpoc"
+      GITHUB_TOKEN = "*****"
+      REPO_OWNER   = "*****"
+      REPO_NAME    = "*****"
     }
   }
 }
